@@ -12,9 +12,9 @@ from django.views.generic.detail import DetailView, SingleObjectMixin
 from django.contrib.messages.views import SuccessMessageMixin
 
 from common.utils import get_logger
+from common.mixins import AdminUserRequiredMixin
 from perms.models import AssetPermission
 from ..models import User, UserGroup
-from ..utils import AdminUserRequiredMixin
 from .. import forms
 
 __all__ = ['UserGroupListView', 'UserGroupCreateView', 'UserGroupDetailView',

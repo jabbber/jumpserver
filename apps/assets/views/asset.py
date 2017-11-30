@@ -24,9 +24,9 @@ from django.shortcuts import get_object_or_404, redirect, reverse
 
 from common.mixins import JSONResponseMixin
 from common.utils import get_object_or_none
+from common.mixins import AdminUserRequiredMixin
 from .. import forms
 from ..models import Asset, AssetGroup, AdminUser, IDC, SystemUser
-from ..hands import AdminUserRequiredMixin
 from ..tasks import update_assets_hardware_info
 
 

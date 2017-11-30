@@ -13,6 +13,7 @@ from .views import IndexView
 schema_view = get_schema_view(title='Users API', renderer_classes=[OpenAPIRenderer, SwaggerUIRenderer])
 urlpatterns = [
     url(r'^$', IndexView.as_view(), name='index'),
+    url(r'^auths/', include('auths.urls.views_urls', namespace='auths')),
     url(r'^users/', include('users.urls.views_urls', namespace='users')),
     url(r'^assets/', include('assets.urls.views_urls', namespace='assets')),
     url(r'^perms/', include('perms.urls.views_urls', namespace='perms')),
@@ -21,6 +22,7 @@ urlpatterns = [
     url(r'^ops/', include('ops.urls.view_urls', namespace='ops')),
 
     # Api url view map
+    url(r'^api/auths', include('auths.urls.api_urls', namespace='api-auths')),
     url(r'^api/users/', include('users.urls.api_urls', namespace='api-users')),
     url(r'^api/assets/', include('assets.urls.api_urls', namespace='api-assets')),
     url(r'^api/perms/', include('perms.urls.api_urls', namespace='api-perms')),

@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 {% block content %}
 <div class="wrapper wrapper-content">
     <div class="row">
@@ -7,23 +8,23 @@
             <div class="ibox float-e-margins">
                 <div class="ibox-title">
                     <span class="label label-success pull-right">Users</span>
-                    <h5>用户总数</h5>
+                    <h5>{% trans 'Total Users' %}</h5>
                 </div>
                 <div class="ibox-content">
                     <h1 class="no-margins"><a href="{% url 'users:user-list' %}">{{ users_count }}</a></h1>
-                    <small>All user</small>
+{#                    <small>All user</small>#}
                 </div>
             </div>
         </div>
         <div class="col-sm-3">
             <div class="ibox float-e-margins">
                 <div class="ibox-title">
-                    <span class="label label-info pull-right">Hosts</span>
-                    <h5>主机总数</h5>
+                    <span class="label label-info pull-right">Assets</span>
+                    <h5>{% trans 'Total Assets' %}</h5>
                 </div>
                 <div class="ibox-content">
                     <h1 class="no-margins"><a href="{% url 'assets:asset-list' %}">{{ assets_count }}</a></h1>
-                    <small>All host</small>
+{#                    <small>All host</small>#}
                 </div>
             </div>
         </div>
@@ -32,11 +33,11 @@
             <div class="ibox float-e-margins">
                 <div class="ibox-title">
                     <span class="label label-primary pull-right">Online</span>
-                    <h5>在线用户</h5>
+                    <h5>{% trans 'Users Online' %}</h5>
                 </div>
                 <div class="ibox-content">
                     <h1 class="no-margins"><a href="{% url 'audits:proxy-log-online-list' %}"> <span id="online_users"></span>{{ online_user_count }}</a></h1>
-                    <small>Online user</small>
+{#                    <small>Online user</small>#}
                 </div>
             </div>
         </div>
@@ -45,11 +46,11 @@
             <div class="ibox float-e-margins">
                 <div class="ibox-title">
                     <span class="label label-danger pull-right">Connected</span>
-                    <h5>已连接服务器</h5>
+                    <h5>{% trans 'Sessions Online' %}</h5>
                 </div>
                 <div class="ibox-content">
                         <h1 class="no-margins"><a href="{% url 'audits:proxy-log-online-list' %}"> <span id="online_hosts"></span>{{ online_asset_count }}</a></h1>
-                    <small>Connected host</small>
+{#                    <small>Connected host</small>#}
                 </div>
             </div>
         </div>

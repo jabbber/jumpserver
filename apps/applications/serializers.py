@@ -5,7 +5,6 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from .models import Terminal, TerminalStatus, TerminalSession, TerminalTask
-from .hands import ProxyLog
 
 
 class TerminalSerializer(serializers.ModelSerializer):

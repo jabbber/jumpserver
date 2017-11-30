@@ -1,23 +1,18 @@
 # -*- coding: utf-8 -*-
 #
 
-import base64
 import uuid
-import hashlib
 import time
 
-from django.core.cache import cache
-from django.conf import settings
-from django.utils.translation import ugettext as _
 from django.utils.six import text_type
+from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy as _
+from rest_framework import authentication, exceptions
 from rest_framework import HTTP_HEADER_ENCODING
-from rest_framework import authentication, exceptions, permissions
-from rest_framework.authentication import CSRFCheck
+
 
 from common.utils import get_object_or_none, make_signature, http_to_unixtime
-from .utils import refresh_token
-from .models import User, AccessKey, PrivateToken
+from ..models import AccessKey
 
 
 def get_request_date_header(request):
@@ -29,7 +24,8 @@ def get_request_date_header(request):
 
 
 class AccessKeyAuthentication(authentication.BaseAuthentication):
-    """App使用Access key进行签名认证, 目前签名算法比较简单,
+    """
+    App使用Access key进行签名认证, 目前签名算法比较简单,
     app注册或者手动建立后,会生成 access_key_id 和 access_key_secret,
     然后使用 如下算法生成签名:
     Signature = md5(access_key_secret + '\n' + Date)
@@ -108,52 +104,3 @@ class AccessKeyAuthentication(authentication.BaseAuthentication):
         if not access_key.user.is_active:
             raise exceptions.AuthenticationFailed(_('User disabled.'))
         return access_key.user, None
-
-
-class AccessTokenAuthentication(authentication.BaseAuthentication):
-    keyword = 'Bearer'
-    model = User
-    expiration = settings.CONFIG.TOKEN_EXPIRATION or 3600
-
-    def authenticate(self, request):
-        auth = authentication.get_authorization_header(request).split()
-        if not auth or auth[0].lower() != self.keyword.lower().encode():
-            return None
-
-        if len(auth) == 1:
-            msg = _('Invalid token header. No credentials provided.')
-            raise exceptions.AuthenticationFailed(msg)
-        elif len(auth) > 2:
-            msg = _('Invalid token header. Sign string '
-                    'should not contain spaces.')
-            raise exceptions.AuthenticationFailed(msg)
-
-        try:
-            token = auth[1].decode()
-        except UnicodeError:
-            msg = _('Invalid token header. Sign string '
-                    'should not contain invalid characters.')
-            raise exceptions.AuthenticationFailed(msg)
-        return self.authenticate_credentials(token)
-
-    @staticmethod
-    def authenticate_credentials(token):
-        user_id = cache.get(token)
-        user = get_object_or_none(User, id=user_id)
-
-        if not user:
-            msg = _('Invalid token or cache refreshed.')
-            raise exceptions.AuthenticationFailed(msg)
-        refresh_token(token, user)
-        return user, None
-
-
-class PrivateTokenAuthentication(authentication.TokenAuthentication):
-    model = PrivateToken
-
-
-class SessionAuthentication(authentication.SessionAuthentication):
-    def enforce_csrf(self, request):
-        reason = CSRFCheck().process_view(request, None, (), {})
-        if reason:
-            raise exceptions.AuthenticationFailed(reason)

@@ -1,9 +1,21 @@
-# coding: utf-8
+# -*- coding: utf-8 -*-
+#
 
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.db import models
 from django.http import JsonResponse
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
+
+
+class AdminUserRequiredMixin(UserPassesTestMixin):
+    def test_func(self):
+        if not self.request.user.is_authenticated:
+            return False
+        elif not self.request.user.is_superuser:
+            self.raise_exception = True
+            return False
+        return True
 
 
 class NoDeleteQuerySet(models.query.QuerySet):
@@ -58,3 +70,4 @@ class IDInFilterMixin(object):
             if isinstance(ids, list):
                 queryset = queryset.filter(id__in=ids)
         return queryset
+

@@ -3,7 +3,7 @@
 
 from rest_framework import viewsets
 
-from .hands import IsSuperUser
+from common.permissions import IsSuperUser
 from .models import Task
 from .serializers import TaskSerializer
 

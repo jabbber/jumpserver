@@ -55,6 +55,7 @@ ALLOWED_HOSTS = CONFIG.ALLOWED_HOSTS or []
 # Application definition
 
 INSTALLED_APPS = [
+    'auths.apps.AuthConfig',
     'users.apps.UsersConfig',
     'assets.apps.AssetsConfig',
     'perms.apps.PermsConfig',
@@ -113,7 +114,7 @@ TEMPLATES = [
 # WSGI_APPLICATION = 'jumpserver.wsgi.applications'
 
 LOGIN_REDIRECT_URL = reverse_lazy('index')
-LOGIN_URL = reverse_lazy('users:login')
+LOGIN_URL = reverse_lazy('auths:login')
 
 SESSION_COOKIE_DOMAIN = CONFIG.SESSION_COOKIE_DOMAIN or None
 CSRF_COOKIE_DOMAIN = CONFIG.CSRF_COOKIE_DOMAIN or None
@@ -290,19 +291,20 @@ REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': (
-        'users.permissions.IsSuperUser',
+        'common.permissions.IsSuperUser',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'users.authentication.AccessKeyAuthentication',
-        'users.authentication.AccessTokenAuthentication',
-        'users.authentication.PrivateTokenAuthentication',
-        'users.authentication.SessionAuthentication',
+        'auths.backends.AccessKeyAuthentication',
+        'auths.backends.AccessTokenAuthentication',
+        'auths.backends.PrivateTokenAuthentication',
+        'auths.backends.SessionAuthentication',
     ),
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
 }
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
+    'auths.backends.PublicKeyBackend',
 ]
 
 # Custom User Auth model
@@ -310,8 +312,7 @@ AUTH_USER_MODEL = 'users.User'
 
 
 # Auth LDAP settings
-if CONFIG.AUTH_LDAP:
-    AUTHENTICATION_BACKENDS.insert(0, 'django_auth_ldap.backend.LDAPBackend')
+CONFIG.AUTH_LDAP and AUTHENTICATION_BACKENDS.insert(0, 'django_auth_ldap.backend.LDAPBackend')
 AUTH_LDAP_SERVER_URI = CONFIG.AUTH_LDAP_SERVER_URI
 AUTH_LDAP_BIND_DN = CONFIG.AUTH_LDAP_BIND_DN
 AUTH_LDAP_BIND_PASSWORD = CONFIG.AUTH_LDAP_BIND_PASSWORD
@@ -331,19 +332,6 @@ BROKER_URL = 'redis://:%(password)s@%(host)s:%(port)s/3' % {
     'port': CONFIG.REDIS_PORT or 6379,
 }
 CELERY_RESULT_BACKEND = BROKER_URL
-
-# TERMINAL_HEATBEAT_INTERVAL = CONFIG.TERMINAL_HEATBEAT_INTERVAL or 30
-
-# crontab job
-# CELERYBEAT_SCHEDULE = {
-#     Check applications is alive every 10m
-# 'check_terminal_alive': {
-#     'task': 'applications.tasks.check_terminal_alive',
-#     'schedule': timedelta(seconds=TERMINAL_HEATBEAT_INTERVAL),
-#     'args': (),
-# },
-# }
-
 
 # Cache use redis
 CACHES = {

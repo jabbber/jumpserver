@@ -53,7 +53,7 @@ class TaskListView(ListView):
     def get_context_data(self, **kwargs):
         context = {
             'app': 'Ops',
-            'action': 'Task record list',
+            'action': 'Task replay list',
             'date_from': self.date_from_s,
             'date_to': self.date_to_s,
             'keyword': self.keyword,
@@ -69,7 +69,7 @@ class TaskDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = {
             'app': 'Ops',
-            'action': 'Task record detail',
+            'action': 'Task replay detail',
             'results': json.loads(self.object.summary or '{}'),
         }
         kwargs.update(context)

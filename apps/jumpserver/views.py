@@ -6,7 +6,7 @@ from django.shortcuts import redirect
 
 from users.models import User
 from assets.models import Asset
-from audits.models import ProxyLog
+from applications.models import TerminalSession
 
 
 class IndexView(LoginRequiredMixin, TemplateView):
@@ -20,10 +20,10 @@ class IndexView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         seven_days_ago = timezone.now() - timezone.timedelta(days=7)
         month_ago = timezone.now() - timezone.timedelta(days=30)
-        proxy_log_seven_days = ProxyLog.objects.filter(date_start__gt=seven_days_ago, is_failed=False)
-        proxy_log_month = ProxyLog.objects.filter(date_start__gt=month_ago, is_failed=False)
+        proxy_log_seven_days = TerminalSession.objects.filter(date_start__gt=seven_days_ago, is_failed=False)
+        proxy_log_month = TerminalSession.objects.filter(date_start__gt=month_ago, is_failed=False)
         month_dates = proxy_log_month.dates('date_start', 'day')
-        month_total_visit = [ProxyLog.objects.filter(date_start__date=d) for d in month_dates]
+        month_total_visit = [TerminalSession.objects.filter(date_start__date=d) for d in month_dates]
         month_str = [d.strftime('%m-%d') for d in month_dates] or ['0']
         month_total_visit_count = [p.count() for p in month_total_visit] or [0]
         month_user = [p.values('user').distinct().count() for p in month_total_visit] or [0]
@@ -36,9 +36,9 @@ class IndexView(LoginRequiredMixin, TemplateView):
         month_asset_disabled = Asset.objects.filter(is_active=False).count()
         week_asset_hot_ten = list(proxy_log_seven_days.values('asset').annotate(total=Count('asset')).order_by('-total')[:10])
         for p in week_asset_hot_ten:
-            last_login = ProxyLog.objects.filter(asset=p['asset']).order_by('date_start').last()
+            last_login = TerminalSession.objects.filter(asset=p['asset']).order_by('date_start').last()
             p['last'] = last_login
-        last_login_ten = ProxyLog.objects.all().order_by('-date_start')[:10]
+        last_login_ten = TerminalSession.objects.all().order_by('-date_start')[:10]
         for p in last_login_ten:
             try:
                 p.avatar_url = User.objects.get(username=p.user).avatar_url()
@@ -46,14 +46,14 @@ class IndexView(LoginRequiredMixin, TemplateView):
                 p.avatar_url = User.objects.first().avatar_url()
         week_user_hot_ten = list(proxy_log_seven_days.values('user').annotate(total=Count('user')).order_by('-total')[:10])
         for p in week_user_hot_ten:
-            last_login = ProxyLog.objects.filter(user=p['user']).order_by('date_start').last()
+            last_login = TerminalSession.objects.filter(user=p['user']).order_by('date_start').last()
             p['last'] = last_login
 
         context = {
             'assets_count': Asset.objects.count(),
             'users_count': User.objects.filter(role__in=('Admin', 'User')).count(),
-            'online_user_count': ProxyLog.objects.filter(is_finished=False).values('user').distinct().count(),
-            'online_asset_count': ProxyLog.objects.filter(is_finished=False).values('asset').distinct().count(),
+            'online_user_count': TerminalSession.objects.filter(is_finished=False).values('user').distinct().count(),
+            'online_asset_count': TerminalSession.objects.filter(is_finished=False).values('asset').distinct().count(),
             'user_visit_count_weekly': proxy_log_seven_days.values('user').distinct().count(),
             'asset_visit_count_weekly': proxy_log_seven_days.count(),
             'user_visit_count_top_five': proxy_log_seven_days.values('user').annotate(total=Count('user')).order_by('-total')[:5],

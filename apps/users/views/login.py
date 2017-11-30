@@ -3,83 +3,26 @@
 from __future__ import unicode_literals
 from django import forms
 from django.shortcuts import render
-from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.files.storage import default_storage
 from django.http import HttpResponseRedirect
 from django.shortcuts import reverse, redirect
-from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext as _
-from django.views.decorators.cache import never_cache
-from django.views.decorators.csrf import csrf_protect
-from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic.base import TemplateView
-from django.views.generic.edit import FormView
 from formtools.wizard.views import SessionWizardView
 from django.conf import settings
 
 from common.utils import get_object_or_none
 from ..models import User
 from ..utils import send_reset_password_mail
-from ..hands import write_login_log_async
 from .. import forms
 
 
-__all__ = ['UserLoginView', 'UserLogoutView',
-           'UserForgotPasswordView', 'UserForgotPasswordSendmailSuccessView',
-           'UserResetPasswordView', 'UserResetPasswordSuccessView',
-           'UserFirstLoginView']
-
-
-@method_decorator(sensitive_post_parameters(), name='dispatch')
-@method_decorator(csrf_protect, name='dispatch')
-@method_decorator(never_cache, name='dispatch')
-class UserLoginView(FormView):
-    template_name = 'users/login.html'
-    form_class = forms.UserLoginForm
-    redirect_field_name = 'next'
-
-    def get(self, request, *args, **kwargs):
-        if request.user.is_staff:
-            return redirect(self.get_success_url())
-        return super(UserLoginView, self).get(request, *args, **kwargs)
-
-    def form_valid(self, form):
-        auth_login(self.request, form.get_user())
-        login_ip = self.request.META.get('REMOTE_ADDR', '')
-        user_agent = self.request.META.get('HTTP_USER_AGENT', '')
-        write_login_log_async.delay(self.request.user.username,
-                                    self.request.user.name,
-                                    login_type='W', login_ip=login_ip,
-                                    user_agent=user_agent)
-        return redirect(self.get_success_url())
-
-    def get_success_url(self):
-        if self.request.user.is_first_login:
-            return reverse('users:user-first-login')
-
-        return self.request.POST.get(
-            self.redirect_field_name,
-            self.request.GET.get(self.redirect_field_name, reverse('index')))
-
-
-@method_decorator(never_cache, name='dispatch')
-class UserLogoutView(TemplateView):
-    template_name = 'flash_message_standalone.html'
-
-    def get(self, request, *args, **kwargs):
-        auth_logout(request)
-        return super(UserLogoutView, self).get(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        context = {
-            'title': _('Logout success'),
-            'messages': _('Logout success, return login page'),
-            'redirect_url': reverse('users:login'),
-            'auto_redirect': True,
-        }
-        kwargs.update(context)
-        return super(UserLogoutView, self).get_context_data(**kwargs)
+__all__ = [
+    'UserForgotPasswordView', 'UserForgotPasswordSendMailSuccessView',
+    'UserResetPasswordView', 'UserResetPasswordSuccessView',
+    'UserFirstLoginView'
+]
 
 
 class UserForgotPasswordView(TemplateView):
@@ -89,15 +32,16 @@ class UserForgotPasswordView(TemplateView):
         email = request.POST.get('email')
         user = get_object_or_none(User, email=email)
         if not user:
-            return self.get(request, errors=_('Email address invalid, '
-                                              'please input again'))
+            msg = _('Email address invalid, please input again')
+            return self.get(request, errors=msg)
         else:
             send_reset_password_mail(user)
             return HttpResponseRedirect(
-                reverse('users:forgot-password-sendmail-success'))
+                reverse('users:forgot-password-sendmail-success')
+            )
 
 
-class UserForgotPasswordSendmailSuccessView(TemplateView):
+class UserForgotPasswordSendMailSuccessView(TemplateView):
     template_name = 'flash_message_standalone.html'
 
     def get_context_data(self, **kwargs):
@@ -108,8 +52,7 @@ class UserForgotPasswordSendmailSuccessView(TemplateView):
             'redirect_url': reverse('users:login'),
         }
         kwargs.update(context)
-        return super(UserForgotPasswordSendmailSuccessView, self)\
-            .get_context_data(**kwargs)
+        return super().get_context_data(**kwargs)
 
 
 class UserResetPasswordSuccessView(TemplateView):
@@ -123,8 +66,7 @@ class UserResetPasswordSuccessView(TemplateView):
             'auto_redirect': True,
         }
         kwargs.update(context)
-        return super(UserResetPasswordSuccessView, self)\
-            .get_context_data(**kwargs)
+        return super().get_context_data(**kwargs)
 
 
 class UserResetPasswordView(TemplateView):
@@ -136,7 +78,7 @@ class UserResetPasswordView(TemplateView):
 
         if not user:
             kwargs.update({'errors': _('Token invalid or expired')})
-        return super(UserResetPasswordView, self).get(request, *args, **kwargs)
+        return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         password = request.POST.get('password')
@@ -162,7 +104,7 @@ class UserFirstLoginView(LoginRequiredMixin, SessionWizardView):
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated() and not request.user.is_first_login:
             return redirect(reverse('index'))
-        return super(UserFirstLoginView, self).dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def done(self, form_list, **kwargs):
         user = self.request.user
@@ -195,10 +137,9 @@ class UserFirstLoginView(LoginRequiredMixin, SessionWizardView):
                 'wechat': user.wechat or '',
                 'phone': user.phone or ''
             }
-        return super(UserFirstLoginView, self).get_form_initial(step)
+        return super().get_form_initial(step)
 
     def get_form(self, step=None, data=None, files=None):
         form = super(UserFirstLoginView, self).get_form(step, data, files)
-
         form.instance = self.request.user
         return form

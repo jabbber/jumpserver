@@ -7,7 +7,7 @@ from django.urls import reverse_lazy
 from django.views.generic.detail import DetailView, SingleObjectMixin
 from .. import forms
 from ..models import Asset, AssetGroup, AdminUser, IDC, SystemUser
-from ..hands import AdminUserRequiredMixin
+from common.mixins import AdminUserRequiredMixin
 
 
 __all__ = ['IDCListView', 'IDCCreateView', 'IDCUpdateView',

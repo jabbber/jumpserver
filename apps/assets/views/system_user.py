@@ -12,7 +12,7 @@ from django.views.generic.detail import DetailView, SingleObjectMixin
 
 from .. import forms
 from ..models import Asset, AssetGroup, SystemUser
-from ..hands import AdminUserRequiredMixin
+from common.mixins import AdminUserRequiredMixin
 from perms.utils import associate_system_users_and_assets
 
 

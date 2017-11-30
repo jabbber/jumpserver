@@ -22,8 +22,9 @@ from django.shortcuts import get_object_or_404
 
 from common.mixins import IDInFilterMixin
 from common.utils import get_object_or_none
-from .hands import IsSuperUser, IsAppUser, IsValidUser, \
-    get_user_granted_assets, push_users
+from common.permissions import IsSuperUser, IsAppUser, IsValidUser
+
+from .hands import get_user_granted_assets, push_users
 from .models import AssetGroup, Asset, IDC, SystemUser, AdminUser
 from . import serializers
 from .tasks import update_assets_hardware_info

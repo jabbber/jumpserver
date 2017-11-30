@@ -1,29 +1,18 @@
 # ~*~ coding: utf-8 ~*~
 
 from rest_framework import generics
-from rest_framework.permissions import AllowAny
+from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import viewsets
 from rest_framework_bulk import BulkModelViewSet
-from django_filters.rest_framework import DjangoFilterBackend
 
-from . import serializers
-from .hands import write_login_log_async
-from .models import User, UserGroup
-from .permissions import IsSuperUser, IsValidUser, IsCurrentUserOrReadOnly
-from .utils import check_user_valid, generate_token
 from common.mixins import IDInFilterMixin
+from common.permissions import IsSuperUser, IsValidUser, IsCurrentUserOrReadOnly
 from common.utils import get_logger
-
+from . import serializers
+from .models import User, UserGroup
 
 logger = get_logger(__name__)
-
-
-# class UserListView(generics.ListAPIView):
-#     queryset = User.objects.all()
-#     serializer_class = serializers.UserSerializer
-#     filter_fields = ('username', 'email', 'name', 'id')
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -109,29 +98,6 @@ class UserGroupUpdateUserApi(generics.RetrieveUpdateAPIView):
     permission_classes = (IsSuperUser,)
 
 
-class UserToken(APIView):
-    permission_classes = (AllowAny,)
-
-    def post(self, request):
-        if not request.user.is_authenticated:
-            username = request.data.get('username', '')
-            email = request.data.get('email', '')
-            password = request.data.get('password', '')
-            public_key = request.data.get('public_key', '')
-
-            user, msg = check_user_valid(
-                username=username, email=email,
-                password=password, public_key=public_key)
-        else:
-            user = request.user
-            msg = None
-        if user:
-            token = generate_token(request, user)
-            return Response({'Token': token, 'Keyword': 'Bearer'}, status=200)
-        else:
-            return Response({'error': msg}, status=406)
-
-
 class UserProfile(APIView):
     permission_classes = (IsValidUser,)
 
@@ -141,33 +107,3 @@ class UserProfile(APIView):
     def post(self, request):
         return Response(request.user.to_json())
 
-
-class UserAuthApi(APIView):
-    permission_classes = (AllowAny,)
-
-    def post(self, request):
-        username = request.data.get('username', '')
-        password = request.data.get('password', '')
-        public_key = request.data.get('public_key', '')
-        login_type = request.data.get('login_type', '')
-        login_ip = request.data.get('remote_addr', None)
-        user_agent = request.data.get('HTTP_USER_AGENT', '')
-
-        if not login_ip:
-            login_ip = request.META.get("REMOTE_ADDR")
-
-        user, msg = check_user_valid(
-            username=username, password=password,
-            public_key=public_key
-        )
-
-        if user:
-            token = generate_token(request, user)
-            write_login_log_async.delay(
-                user.username, name=user.name,
-                user_agent=user_agent, login_ip=login_ip,
-                login_type=login_type
-            )
-            return Response({'token': token, 'user': user.to_json()})
-        else:
-            return Response({'msg': msg}, status=401)

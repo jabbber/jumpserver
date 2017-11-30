@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404, reverse, redirect
 
 from .. import forms
 from ..models import Asset, AssetGroup, AdminUser, IDC, SystemUser
-from ..hands import AdminUserRequiredMixin
+from common.mixins import AdminUserRequiredMixin
 
 
 __all__ = ['AssetGroupCreateView', 'AssetGroupDetailView',

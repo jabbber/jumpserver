@@ -10,7 +10,7 @@ from django.urls import reverse_lazy, reverse
 from common.mixins import JSONResponseMixin
 from .models import Terminal
 from .forms import TerminalForm
-from .hands import AdminUserRequiredMixin
+from common.mixins import AdminUserRequiredMixin
 
 
 class TerminalListView(LoginRequiredMixin, ListView):

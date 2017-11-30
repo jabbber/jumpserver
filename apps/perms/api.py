@@ -2,19 +2,22 @@
 # 
 
 from django.shortcuts import get_object_or_404
-from rest_framework.views import APIView, Response
-from rest_framework.generics import ListAPIView, get_object_or_404
 from rest_framework import viewsets
-from users.permissions import IsValidUser, IsSuperUser, IsAppUser, IsSuperUserOrAppUser
+from rest_framework.generics import ListAPIView, get_object_or_404
+from rest_framework.views import APIView, Response
+
+from common.permissions import IsValidUser, IsSuperUser, IsAppUser, \
+    IsSuperUserOrAppUser
 from common.utils import get_object_or_none
+from . import serializers
+from .hands import AssetGrantedSerializer, User, UserGroup, Asset, \
+    AssetGroup, AssetGroupGrantedSerializer, SystemUser, \
+    MyAssetGroupGrantedSerializer
+from .models import AssetPermission
+from .utils import associate_system_users_and_assets
 from .utils import get_user_granted_assets, get_user_granted_asset_groups, \
     get_user_asset_permissions, get_user_group_asset_permissions, \
     get_user_group_granted_assets, get_user_group_granted_asset_groups
-from .models import AssetPermission
-from .hands import AssetGrantedSerializer, User, UserGroup, AssetGroup, Asset, \
-    AssetGroup, AssetGroupGrantedSerializer, SystemUser, MyAssetGroupGrantedSerializer
-from . import serializers
-from .utils import associate_system_users_and_assets
 
 
 class AssetPermissionViewSet(viewsets.ModelViewSet):

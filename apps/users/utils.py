@@ -1,39 +1,17 @@
 # ~*~ coding: utf-8 ~*~
 #
 from __future__ import unicode_literals
-import base64
 import logging
-import uuid
 
-from paramiko.rsakey import RSAKey
 from django.conf import settings
 from django.contrib.auth.mixins import UserPassesTestMixin
-from django.contrib.auth import authenticate
 from django.utils.translation import ugettext as _
-from django.core.cache import cache
 
 from common.tasks import send_mail_async
-from common.utils import reverse, get_object_or_none
-from .models import User
-
-
-# try:
-#     from io import StringIO
-# except ImportError:
-#     from StringIO import StringIO
+from common.utils import reverse
 
 
 logger = logging.getLogger('jumpserver')
-
-
-class AdminUserRequiredMixin(UserPassesTestMixin):
-    def test_func(self):
-        if not self.request.user.is_authenticated:
-            return False
-        elif not self.request.user.is_superuser:
-            self.raise_exception = True
-            return False
-        return True
 
 
 def user_add_success_next(user):
@@ -122,53 +100,7 @@ def send_reset_ssh_key_mail(user):
     send_mail_async.delay(subject, message, recipient_list, html_message=message)
 
 
-def check_user_valid(**kwargs):
-    password = kwargs.pop('password', None)
-    public_key = kwargs.pop('public_key', None)
-    email = kwargs.pop('email', None)
-    username = kwargs.pop('username', None)
-
-    if username:
-        user = get_object_or_none(User, username=username)
-    elif email:
-        user = get_object_or_none(User, email=email)
-    else:
-        user = None
-
-    if user is None:
-        return None, _('User not exist')
-    elif not user.is_valid:
-        return None, _('Disabled or expired')
-
-    if password and authenticate(username=username, password=password):
-        return user, ''
-
-    if public_key and user.public_key:
-        public_key_saved = user.public_key.split()
-        if len(public_key_saved) == 1:
-            if public_key == public_key_saved[0]:
-                return user, ''
-        elif len(public_key_saved) > 1:
-            if public_key == public_key_saved[1]:
-                return user, ''
-    return None, _('Password or SSH public key invalid')
 
 
-def refresh_token(token, user, expiration=settings.CONFIG.TOKEN_EXPIRATION or 3600):
-    cache.set(token, user.id, expiration)
-
-
-def generate_token(request, user):
-    expiration = settings.CONFIG.TOKEN_EXPIRATION or 3600
-    remote_addr = request.META.get('REMOTE_ADDR', '')
-    if not isinstance(remote_addr, bytes):
-        remote_addr = remote_addr.encode("utf-8")
-    remote_addr = base64.b16encode(remote_addr) #.replace(b'=', '')
-    token = cache.get('%s_%s' % (user.id, remote_addr))
-    if not token:
-        token = uuid.uuid4().hex
-        cache.set(token, user.id, expiration)
-        cache.set('%s_%s' % (user.id, remote_addr), token, expiration)
-    return token
 
 

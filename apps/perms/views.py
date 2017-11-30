@@ -15,7 +15,8 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic.detail import DetailView, SingleObjectMixin
 
 from common.utils import search_object_attr
-from .hands import AdminUserRequiredMixin, User, UserGroup, SystemUser, \
+from common.mixins import AdminUserRequiredMixin
+from .hands import User, UserGroup, SystemUser, \
     Asset, AssetGroup
 from .models import AssetPermission
 from .forms import AssetPermissionForm

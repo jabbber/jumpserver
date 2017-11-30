@@ -29,8 +29,8 @@ from django.contrib.auth import logout as auth_logout
 
 from .. import forms
 from ..models import User, UserGroup
-from ..utils import AdminUserRequiredMixin, user_add_success_next
-from common.mixins import JSONResponseMixin
+from ..utils import user_add_success_next
+from common.mixins import JSONResponseMixin, AdminUserRequiredMixin
 from common.utils import get_logger, get_object_or_none
 from perms.models import AssetPermission
 

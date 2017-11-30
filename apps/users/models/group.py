@@ -3,14 +3,11 @@
 #
 
 from __future__ import unicode_literals
-
 import uuid
 
 from django.db import models, IntegrityError
-from django.contrib.auth.models import Group
 from django.utils.translation import ugettext_lazy as _
 
-from common.utils import signer, date_expired_default
 from common.mixins import NoDeleteModelMixin
 
 __all__ = ['UserGroup']
@@ -24,9 +21,8 @@ class UserGroup(NoDeleteModelMixin):
                                         verbose_name=_('Date created'))
     created_by = models.CharField(max_length=100)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
-    __str__ = __unicode__
 
     def delete(self, using=None, keep_parents=False):
         if self.name != 'Default':

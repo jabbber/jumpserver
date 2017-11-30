@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 #
-import base64
 from collections import OrderedDict
 import copy
 import logging
-import tarfile
-
 import os
-from rest_framework import viewsets, serializers
+
+from rest_framework import viewsets
 from rest_framework.views import APIView, Response
 from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
@@ -15,11 +13,11 @@ from django.utils import timezone
 from django.conf import settings
 
 from common.utils import get_object_or_none
+from common.permissions import IsSuperUserOrAppUser, IsAppUser,\
+    IsSuperUserOrAppUserOrUserReadonly
 from .models import Terminal, TerminalStatus, TerminalSession, TerminalTask
 from .serializers import TerminalSerializer, TerminalStatusSerializer, \
     TerminalSessionSerializer, TerminalTaskSerializer
-from .hands import IsSuperUserOrAppUser, IsAppUser, ProxyLog, \
-    IsSuperUserOrAppUserOrUserReadonly
 from .backends import get_command_store, get_replay_store, SessionCommandSerializer
 
 logger = logging.getLogger(__file__)

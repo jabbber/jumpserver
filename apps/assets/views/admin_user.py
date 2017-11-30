@@ -10,7 +10,7 @@ from django.views.generic.detail import DetailView, SingleObjectMixin
 
 from .. import forms
 from ..models import Asset, AssetGroup, AdminUser, IDC, SystemUser
-from ..hands import AdminUserRequiredMixin
+from common.mixins import AdminUserRequiredMixin
 
 __all__ = ['AdminUserCreateView', 'AdminUserDetailView',
            'AdminUserDeleteView', 'AdminUserListView',

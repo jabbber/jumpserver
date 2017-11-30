@@ -16,11 +16,7 @@ router.register(r'v1/groups', api.UserGroupViewSet, 'user-group')
 
 urlpatterns = [
     # url(r'', api.UserListView.as_view()),
-    url(r'^v1/token/$', api.UserToken.as_view(), name='user-token'),
     url(r'^v1/profile/$', api.UserProfile.as_view(), name='user-profile'),
-    url(r'^v1/auth/$', api.UserAuthApi.as_view(), name='user-auth'),
-    url(r'^v1/users/(?P<pk>[0-9a-zA-Z\-]+)/password/reset/$',
-        api.UserResetPasswordApi.as_view(), name='user-reset-password'),
     url(r'^v1/users/(?P<pk>[0-9a-zA-Z\-]+)/pubkey/reset/$',
         api.UserResetPKApi.as_view(), name='user-public-key-reset'),
     url(r'^v1/users/(?P<pk>[0-9a-zA-Z\-]+)/pubkey/update/$',

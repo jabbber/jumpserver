@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # 
 
-from .group import *
-from .user import *
-from .authentication import *
+from .user import User
+from .group import UserGroup
 from .utils import *
