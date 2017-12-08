@@ -23,6 +23,7 @@ from ..models import User
 from ..utils import send_reset_password_mail
 from ..hands import write_login_log_async
 from .. import forms
+from ..auth3rdparty import auth as auth3rd
 
 
 __all__ = ['UserLoginView', 'UserLogoutView',
@@ -43,6 +44,29 @@ class UserLoginView(FormView):
         if request.user.is_staff:
             return redirect(self.get_success_url())
         return super(UserLoginView, self).get(request, *args, **kwargs)
+
+    def post(self, request):
+        username = self.request.POST.get('username')
+        password = self.request.POST.get('password')
+        auth_result, auth_text = auth3rd(username,password)
+        print(auth_text)
+        if auth_result:
+            try:
+                user = User.objects.get(username=username)
+            except:
+                user = None
+            else:
+                user.reset_password(password)
+
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            if not auth_result:
+                form.error_messages['invalid_login'] = '密码不正确且第三方接口验证失败: %s'%auth_text
+            elif not user:
+                form.error_messages['invalid_login'] = '用户没有创建'
+            return self.form_invalid(form)
 
     def form_valid(self, form):
         auth_login(self.request, form.get_user())
